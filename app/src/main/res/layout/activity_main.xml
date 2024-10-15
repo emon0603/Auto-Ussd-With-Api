@@ -9,35 +9,48 @@
 
     >
 
-    <com.google.android.material.appbar.AppBarLayout
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-
-
+        android:layout_height="match_parent"
         >
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+
+
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="KarentPay AI"
-            app:titleCentered="true"
-            app:titleTextColor="@color/white"
-            android:background="#6E00E0"
+
+            >
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:title="KarentPay AI"
+                app:titleCentered="true"
+                app:titleTextColor="@color/white"
+                android:background="#6E00E0"
+                app:navigationIcon="@drawable/baseline_dehaze_24"
+                />
+
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+        <!-- Main content -->
+        <FrameLayout
+            android:id="@+id/content_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="?attr/actionBarSize"
             />
 
 
-    </com.google.android.material.appbar.AppBarLayout>
 
 
 
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- Main content -->
-    <FrameLayout
-        android:id="@+id/content_frame"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
-        />
+
 
     <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
@@ -46,5 +59,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/navigation_menu"
-        app:headerLayout="@layout/nav_header" />
+        app:headerLayout="@layout/nav_header"
+        />
 </androidx.drawerlayout.widget.DrawerLayout>
