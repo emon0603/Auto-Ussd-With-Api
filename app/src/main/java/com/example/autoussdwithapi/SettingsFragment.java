@@ -21,6 +21,7 @@ public class SettingsFragment extends Fragment {
 
     EditText edapi,edbkash,ednagad,edapikey,edsendernumber;
     Button clearbt,savebt;
+    private static final String RADIO_SELECTION_KEY = "radio_selection";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -38,29 +39,67 @@ public class SettingsFragment extends Fragment {
         edapikey = SettingView.findViewById(R.id.editapikey);
         edsendernumber = SettingView.findViewById(R.id.edsendernumber);
 
+        //-----------------------------------------------------------------------------------------
         SharedPreferences sharedPreferences = getContext().getSharedPreferences(String.valueOf(R.string.app_name), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        int savedRadioButtonId = sharedPreferences.getInt(RADIO_SELECTION_KEY, -1);
+        if (savedRadioButtonId != -1) {
+            radioGroup.check(savedRadioButtonId);  // Set the saved selection
+        }
+
+        String api = sharedPreferences.getString("api", null);
+        String bkash = String.valueOf((sharedPreferences.getInt("bkash",0 )));
+        String nagad = String.valueOf(sharedPreferences.getInt("nagad", 0));
+        String apikey = sharedPreferences.getString("apikey", null);
+        String number = String.valueOf(sharedPreferences.getInt("number", 0));
+
+
+        edapi.setText(api);
+        edbkash.setText(bkash);
+        ednagad.setText(nagad);
+        edapikey.setText(apikey);
+        edsendernumber.setText(number);
+
+
+        //-----------------------------------------------------------------------------------------
 
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (checkedId == R.id.radioagent) {
-                    Toast.makeText(getContext(), "Agent", Toast.LENGTH_SHORT).show();
 
                 } else if (checkedId == R.id.radiopersonal) {
-                    Toast.makeText(getContext(), "Personal", Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
 
-        savebt.setOnClickListener(View->{
-            editor.putString("api", edapi.toString());
-            editor.putString("bkash", edbkash.toString());
-            editor.putString("nagad", ednagad.toString());
-            editor.putString("apikey", edapikey.toString());
-            editor.putString("number", edsendernumber.toString());
-            sharedPreferences.edit();
+        savebt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editor.putString("api", edapi.getText().toString());
+                editor.putInt("bkash", Integer.parseInt(edbkash.getText().toString()));
+                editor.putInt("nagad", Integer.parseInt(ednagad.getText().toString()));
+                editor.putString("apikey", edapikey.getText().toString());
+                editor.putInt("number", Integer.parseInt(edsendernumber.getText().toString()));
+                editor.apply();
+
+                int selectedRadioButtonId = radioGroup.getCheckedRadioButtonId();
+                if (selectedRadioButtonId != -1) {
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt(RADIO_SELECTION_KEY, selectedRadioButtonId);
+                    editor.apply();  // Save data asynchronously
+                }
+
+                Toast.makeText(getContext(), "Data saved", Toast.LENGTH_SHORT).show();
+
+
+
+            }
         });
+
+
 
 
         clearbt.setOnClickListener(new View.OnClickListener() {
