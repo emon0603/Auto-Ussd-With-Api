@@ -11,8 +11,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.Toast;
 
 import com.example.autoussdwithapi.R;
 
@@ -23,10 +25,10 @@ public class MyAccessibilityService extends AccessibilityService {
 
     private static final String CHANNEL_ID = "YOUR_CHANNEL_ID";
     private NotificationManager notificationManager;
-
-    private int currentindex = 0;
     public static String TAG = "USSD";
-    private List<String> numList;
+    private List<String> numberList;
+    private int currentIndex = 0;
+
 
     @Override
     public void onCreate() {
@@ -35,6 +37,83 @@ public class MyAccessibilityService extends AccessibilityService {
         createNotificationChannel();
         showPersistentNotification();
     }
+
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        Log.d(TAG, "onAccessibilityEvent");
+
+        try {
+
+            AccessibilityNodeInfo nodeInfo = event.getSource();
+
+            if (nodeInfo == null) return;
+
+            String text = event.getText().toString();
+            if (event.getClassName().equals("android.app.AlertDialog")) {
+                Log.d(TAG, text);
+                Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+
+                AccessibilityNodeInfo nodeInput = nodeInfo.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
+                if (nodeInput != null && currentIndex < numberList.size()) {
+
+                    String numberToDial = numberList.get(currentIndex);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, numberToDial);
+                    nodeInput.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, bundle);
+                    nodeInput.refresh();
+
+
+                    List<AccessibilityNodeInfo> list = nodeInfo.findAccessibilityNodeInfosByText("Send");
+                    for (AccessibilityNodeInfo node : list) {
+                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    }
+
+                    currentIndex++;
+                    Log.d("index", "");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onInterrupt() {
+    }
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        Log.d(TAG, "onServiceConnected");
+
+        try {
+
+            numberList = new ArrayList<>();
+            numberList.add("1");
+            numberList.add("1");
+
+            AccessibilityServiceInfo info = new AccessibilityServiceInfo();
+            info.flags = AccessibilityServiceInfo.DEFAULT;
+            info.packageNames = new String[]{"com.android.phone"};
+            info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
+            info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
+            setServiceInfo(info);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("repete", "Service Started");
+        currentIndex = 0;
+        return START_STICKY;
+    }
+
+
+    //----------------------------------------------------------------------------
+
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -50,7 +129,10 @@ public class MyAccessibilityService extends AccessibilityService {
 
     private void showPersistentNotification() {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+                        | PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -58,76 +140,13 @@ public class MyAccessibilityService extends AccessibilityService {
                     .setContentTitle("Accessibility Service Enabled")
                     .setContentText("Click to access accessibility settings")
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setOngoing(true) // এটি নোটিফিকেশনকে পেরম্যানেন্ট বানাবে
-                    .setContentIntent(pendingIntent) // ক্লিক করলে এই Intent চালাবে
+                    .setOngoing(true)
+                    .setContentIntent(pendingIntent)
                     .build();
         }
-
         notificationManager.notify(1, notification);
     }
 
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent event) {
-        // আপনার কোড এখানে
-
-        AccessibilityNodeInfo nodeInfo = event.getSource();
-
-        if (nodeInfo == null) return;
-
-        String text = event.getText().toString();
-
-        if (event.getClassName().equals("android.app.AlertDialog")) {
-
-            AccessibilityNodeInfo nodeinput = nodeInfo.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
-
-            if (nodeinput != null && currentindex < numList.size() ) {
-
-                String numberToDial = String.valueOf(numList.get(currentindex));
-
-                Bundle bundle = new Bundle();
-                bundle.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, numberToDial);
-                nodeinput.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT,bundle);
-                nodeinput.refresh();
-
-                List<AccessibilityNodeInfo> list = nodeInfo.findAccessibilityNodeInfosByText("Send");
-                for (AccessibilityNodeInfo node : list) {
-                    node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                }
-
-                currentindex++;
-
-
-            }
-
-        }
-
-
-
-
-    }
-
-    @Override
-    public void onInterrupt() {
-        // আপনার কোড এখানে
-
-        numList = new ArrayList<>();
-        numList.add("9");
-        numList.add("1");
-        numList.add("12345");
-
-        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-        info.flags = AccessibilityServiceInfo.DEFAULT;
-        info.packageNames = new String[]{"com.android.phone"};
-        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
-        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
-        setServiceInfo(info);
-
-    }
-
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        currentindex = 0;
-        return START_STICKY;
-    }
 }
+
+

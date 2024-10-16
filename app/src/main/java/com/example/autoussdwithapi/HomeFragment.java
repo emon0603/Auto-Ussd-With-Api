@@ -42,7 +42,6 @@ public class HomeFragment extends Fragment {
     TextView stutustv;
     Button button;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -80,9 +79,6 @@ public class HomeFragment extends Fragment {
             }
         });
 
-
-
-
         return HomeView;
     }
 
@@ -103,7 +99,6 @@ public class HomeFragment extends Fragment {
     private void showNotification() {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
         PendingIntent pendingIntent = PendingIntent.getActivity(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
         Notification notification = new NotificationCompat.Builder(requireContext(), CHANNEL_ID)
                 .setContentTitle("Accessibility Service Enabled")
                 .setContentText("Click to manage accessibility settings")
@@ -111,7 +106,6 @@ public class HomeFragment extends Fragment {
                 .setContentIntent(pendingIntent)
                 .setOngoing(true) // This makes the notification ongoing (non-dismissible)
                 .build();
-
         notificationManager.notify(1, notification);
     }
 
@@ -151,7 +145,6 @@ public class HomeFragment extends Fragment {
         }
         return false;
     }
-
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Accessibility Service Channel";
@@ -175,7 +168,6 @@ public class HomeFragment extends Fragment {
                 runUssd();
                 Intent intent = new Intent(getActivity(), MyAccessibilityService.class);
                 requireActivity().startService(intent);
-
             }
         });
 
@@ -185,6 +177,8 @@ public class HomeFragment extends Fragment {
     private void runUssd(){
         String ussdCode = "*121#";
         //String ussdCode = ussdEditText.getText().toString();
+
+
 
         Intent intent = new Intent(Intent.ACTION_CALL);
         intent.setData(ussdToCallableUri(ussdCode));
@@ -201,20 +195,15 @@ public class HomeFragment extends Fragment {
             uriString += "tel:";
 
         for(char c : ussd.toCharArray()) {
-            if(c == '#')
-                uriString += Uri.encode("#");
-            else
-                uriString += c;
+            if(c == '#') uriString += Uri.encode("#");
+            else uriString += c;
         }
-
         return Uri.parse(uriString);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-
     }
 
 
@@ -237,19 +226,9 @@ public class HomeFragment extends Fragment {
 
             }
         });
-
         RequestQueue requestQueue = Volley.newRequestQueue(requireContext());
         requestQueue.add(stringRequest);
-
-
-
-
-
     }
-
-
-
-
 }
 
 

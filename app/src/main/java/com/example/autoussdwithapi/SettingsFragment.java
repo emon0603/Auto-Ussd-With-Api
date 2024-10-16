@@ -60,8 +60,6 @@ public class SettingsFragment extends Fragment {
             editor.putString("apikey", edapikey.toString());
             editor.putString("number", edsendernumber.toString());
             sharedPreferences.edit();
-
-
         });
 
 
