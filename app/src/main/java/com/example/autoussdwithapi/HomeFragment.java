@@ -15,6 +15,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.example.autoussdwithapi.Service.Forground;
 import com.example.autoussdwithapi.Service.MyAccessibilityService;
 
 public class HomeFragment extends Fragment {
@@ -40,6 +41,7 @@ public class HomeFragment extends Fragment {
                         startActivity(intent);
                         //stutustv.setText("Accessibility Service is Enabled");
                     } else {
+
 
                     }
                 } else {
@@ -87,6 +89,7 @@ public class HomeFragment extends Fragment {
         }
         return false;
     }
+
 
 
 
