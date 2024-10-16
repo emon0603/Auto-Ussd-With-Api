@@ -32,6 +32,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.autoussdwithapi.Service.MyAccessibilityService;
 
+import org.json.JSONObject;
+
 public class HomeFragment extends Fragment {
 
     private static final String CHANNEL_ID = "accessibility_channel";
@@ -217,8 +219,6 @@ public class HomeFragment extends Fragment {
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-
-
 
                 String s = response.toString();
                 Log.d("server", s);
