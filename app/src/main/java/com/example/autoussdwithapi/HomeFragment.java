@@ -6,29 +6,38 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.autoussdwithapi.Service.Forground;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.autoussdwithapi.Service.MyAccessibilityService;
-import com.example.autoussdwithapi.Service.NotificationForground;
 
 public class HomeFragment extends Fragment {
 
     private static final String CHANNEL_ID = "accessibility_channel";
     private NotificationManager notificationManager;
     TextView stutustv;
+    Button button;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -36,12 +45,13 @@ public class HomeFragment extends Fragment {
         View HomeView = inflater.inflate(R.layout.fragment_home, container, false);
         stutustv = HomeView.findViewById(R.id.stutustv);
         Switch switchAccessibility = HomeView.findViewById(R.id.switch1);
+        button = HomeView.findViewById(R.id.button3);
 
         // Notification Manager
         notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
         createNotificationChannel();
 
-
+        //Api_Request();
 
         switchAccessibility.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -50,23 +60,36 @@ public class HomeFragment extends Fragment {
                     if (!isAccessibilityServiceEnabled(MyAccessibilityService.class)) {
                         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                         startActivity(intent);
+                        Button_Click();
 
                     } else {
                         // Start the foreground service
-                        /*Intent serviceIntent = new Intent(requireContext(), NotificationForground.class);
-                        requireContext().startService(serviceIntent);
-                         */
-                        showNotification();
+                        startForegroundService();
+                        Button_Click();
+
                     }
                 } else {
                     // Stop the foreground service
-                    Intent serviceIntent = new Intent(requireContext(), NotificationForground.class);
-                    requireContext().stopService(serviceIntent);
+                    stopForegroundService();
                 }
             }
         });
 
         return HomeView;
+    }
+
+    private void startForegroundService() {
+        Intent serviceIntent = new Intent(requireContext(), MyAccessibilityService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            requireContext().startForegroundService(serviceIntent);
+        }
+        showNotification();
+    }
+
+    private void stopForegroundService() {
+        Intent serviceIntent = new Intent(requireContext(), MyAccessibilityService.class);
+        requireContext().stopService(serviceIntent);
+        removeNotification();
     }
 
     private void showNotification() {
@@ -78,7 +101,7 @@ public class HomeFragment extends Fragment {
                 .setContentText("Click to manage accessibility settings")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
-                .setAutoCancel(false)
+                .setOngoing(true) // This makes the notification ongoing (non-dismissible)
                 .build();
 
         notificationManager.notify(1, notification);
@@ -121,19 +144,107 @@ public class HomeFragment extends Fragment {
         return false;
     }
 
-
-
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Accessibility Service Channel";
-            String description = "Channel for Accessibility Service notification";
+            String description = "Now You Can Enjoying!";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
-           // NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(channel);
         }
     }
 
 
+    private void Button_Click(){
+
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Toast.makeText(getContext(), "Test", Toast.LENGTH_SHORT).show();
+                runUssd();
+                Intent intent = new Intent(getActivity(), MyAccessibilityService.class);
+                requireActivity().startService(intent);
+
+            }
+        });
+
+
+    }
+
+    private void runUssd(){
+        String ussdCode = "*121#";
+        //String ussdCode = ussdEditText.getText().toString();
+
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(ussdToCallableUri(ussdCode));
+        try{
+            startActivity(intent);
+        } catch (SecurityException e){
+            e.printStackTrace();
+        }
+    }
+
+    private Uri ussdToCallableUri(String ussd) {
+        String uriString = "";
+        if(!ussd.startsWith("tel:"))
+            uriString += "tel:";
+
+        for(char c : ussd.toCharArray()) {
+            if(c == '#')
+                uriString += Uri.encode("#");
+            else
+                uriString += c;
+        }
+
+        return Uri.parse(uriString);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+
+    }
+
+
+    private void Api_Request(){
+
+        String url = "http://10.10.10.5/USSD/test.php?n=0175575 && t=b && b=100";
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+
+
+                String s = response.toString();
+                Log.d("server", s);
+                Toast.makeText(getContext(), s, Toast.LENGTH_SHORT).show();
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+        RequestQueue requestQueue = Volley.newRequestQueue(requireContext());
+        requestQueue.add(stringRequest);
+
+
+
+
+
+    }
+
+
+
+
 }
+
+
+
