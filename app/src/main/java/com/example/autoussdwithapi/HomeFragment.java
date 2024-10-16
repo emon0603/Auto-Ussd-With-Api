@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +42,7 @@ public class HomeFragment extends Fragment {
     TextView stutustv;
     Button button;
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -49,11 +51,12 @@ public class HomeFragment extends Fragment {
         Switch switchAccessibility = HomeView.findViewById(R.id.switch1);
         button = HomeView.findViewById(R.id.button3);
 
+
         // Notification Manager
         notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
         createNotificationChannel();
 
-        //Api_Request();
+        Api_Request();
 
         switchAccessibility.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -76,6 +79,9 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+
+
+
 
         return HomeView;
     }
