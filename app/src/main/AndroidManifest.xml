@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -39,9 +40,17 @@
         </service>
 
 
+        <service
+            android:name=".Service.NotificationForground"
+            android:foregroundServiceType="remoteMessaging"
+            android:exported="false"
+            tools:ignore="ForegroundServicePermission">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+        </service>
+
         <service android:name=".Service.Forground"></service>
-
-
 
 
     </application>

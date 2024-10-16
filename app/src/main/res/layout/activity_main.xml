@@ -25,7 +25,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:title="KarentPay AI"
+                app:title="KarentPay Marcent AI"
                 app:titleCentered="true"
                 app:titleTextColor="@color/white"
                 android:background="#6E00E0"

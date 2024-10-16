@@ -58,12 +58,6 @@ public class Forground extends Service {
         }
 
 
-
-
-
-
-
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -72,10 +66,5 @@ public class Forground extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-
-
-
-
-
 
 }

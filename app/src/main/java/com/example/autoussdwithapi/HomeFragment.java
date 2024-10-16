@@ -1,11 +1,13 @@
 package com.example.autoussdwithapi;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,20 +17,29 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.core.app.NotificationCompat;
+import androidx.fragment.app.Fragment;
+
 import com.example.autoussdwithapi.Service.Forground;
 import com.example.autoussdwithapi.Service.MyAccessibilityService;
+import com.example.autoussdwithapi.Service.NotificationForground;
 
 public class HomeFragment extends Fragment {
 
+    private static final String CHANNEL_ID = "accessibility_channel";
+    private NotificationManager notificationManager;
     TextView stutustv;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View HomeView = inflater.inflate(R.layout.fragment_home, container, false);
         stutustv = HomeView.findViewById(R.id.stutustv);
         Switch switchAccessibility = HomeView.findViewById(R.id.switch1);
+
+        // Notification Manager
+        notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        createNotificationChannel();
 
 
 
@@ -39,23 +50,43 @@ public class HomeFragment extends Fragment {
                     if (!isAccessibilityServiceEnabled(MyAccessibilityService.class)) {
                         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                         startActivity(intent);
-                        //stutustv.setText("Accessibility Service is Enabled");
+
                     } else {
-
-
+                        // Start the foreground service
+                        /*Intent serviceIntent = new Intent(requireContext(), NotificationForground.class);
+                        requireContext().startService(serviceIntent);
+                         */
+                        showNotification();
                     }
                 } else {
-
-
+                    // Stop the foreground service
+                    Intent serviceIntent = new Intent(requireContext(), NotificationForground.class);
+                    requireContext().stopService(serviceIntent);
                 }
             }
         });
 
-
         return HomeView;
-
     }
 
+    private void showNotification() {
+        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        PendingIntent pendingIntent = PendingIntent.getActivity(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Notification notification = new NotificationCompat.Builder(requireContext(), CHANNEL_ID)
+                .setContentTitle("Accessibility Service Enabled")
+                .setContentText("Click to manage accessibility settings")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(false)
+                .build();
+
+        notificationManager.notify(1, notification);
+    }
+
+    private void removeNotification() {
+        notificationManager.cancel(1);
+    }
 
     private boolean isAccessibilityServiceEnabled(Class<?> accessibilityServiceClass) {
         int accessibilityEnabled = 0;
@@ -92,6 +123,17 @@ public class HomeFragment extends Fragment {
 
 
 
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Accessibility Service Channel";
+            String description = "Channel for Accessibility Service notification";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+           // NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
 
 
 }
